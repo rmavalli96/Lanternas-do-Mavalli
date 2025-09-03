@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste de Menu Accordion com JavaScript</title>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+
+    <style>
+        /* --- Estilos Gerais (Apenas para o exemplo ficar mais bonito) --- */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+            background-color: #f0f2f5;
+            color: #333;
+            padding: 40px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .section-title h2 {
+            text-align: center;
+            font-size: 2em;
+            margin-bottom: 30px;
+        }
+        .review-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        /* --- Estilos Essenciais para o Accordion --- */
+        
+        /* O card que contém tudo */
+        .review-card {
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            overflow: hidden; /* Importante para o efeito visual do border-radius */
+        }
+        
+        /* O cabeçalho que será clicável */
+        .review-header {
+            display: inline-flex;
+            align-items: center;
+            padding: 15px 20px;
+            cursor: pointer;
+            user-select: none; /* Impede que o texto seja selecionado ao clicar */
+            transition: background-color 0.3s ease;
+        }
+        
+        .review-header:hover {
+            background-color: #f9f9f9;
+        }
+
+        .review-icon {
+            margin-right: 15px;
+            font-size: 1.5em;
+            color: #007bff;
+        }
+        
+        .review-header h3 {
+            margin: 0;
+            flex-grow: 1; /* Faz o H3 ocupar o espaço disponível */
+        }
+        
+        /* Ícone de '+' e '-' no final do cabeçalho */
+        .review-header::after {
+            content: '\002B'; /* Sinal de '+' */
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #777;
+            transition: transform 0.3s ease;
+        }
+        
+        /* O contêiner dos subitens (escondido por padrão) */
+        .sub-items {
+            max-height: 0; /* Começa com altura zero, escondido */
+            overflow: hidden; /* Esconde o conteúdo que transborda */
+            transition: max-height 0.4s ease-out; /* Animação suave da altura */
+            background-color: #fafafa;
+            padding: 0 20px; /* Prepara o padding lateral */
+        }
+        
+        .sub-items p {
+            margin: 0;
+            padding: 15px 0;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        /* --- ESTADO ATIVO (Controlado pelo JavaScript) --- */
+        
+        /* Quando o .review-card tem a classe .active, o ícone muda */
+        .review-card.active .review-header::after {
+            transform: rotate(45deg); /* Rotaciona o '+' para parecer um 'x' ou '-' */
+            content: '\00D7'; /* Sinal de 'x' para fechar */
+        }
+
+        /* Quando o .review-card tem a classe .active, o .sub-items se expande */
+        .review-card.active .sub-items {
+            max-height: 500px; /* Altura máxima para caber o conteúdo. A transição criará a animação. */
+            padding: 0 20px; /* Garante que o padding seja aplicado corretamente */
+        }
+    </style>
+</head>
+<body>
+
+    <section class="review" id="reviews">
+        <div class="container">
+            <div class="section-title">
+                <h2>Avaliações</h2>
+            </div>
+    
+            <div class="review-grid">
+    
+                <div class="review-card">
+                    <div class="review-header">
+                        <div class="review-icon">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <h3>Lanternas EDC</h3>
+                    </div>
+                    <div class="sub-items">
+                        <p>Lanternas que cabem no bolso, ideais para qualquer situação.</p>
+                        <p><a href="#">Ver modelos de EDC</a></p>
+                    </div>
+                </div>
+    
+                <div class="review-card">
+                    <div class="review-header">
+                        <div class="review-icon">
+                            <i class="fas fa-star"></i>
+                        </div>
+                        <h3>Lanternas Especiais</h3>
+                    </div>
+                    <div class="sub-items">
+                         <p>Lanternas projetadas para situações específicas, oferecendo desempenho superior.</p>
+                         <p><a href="#">Ver modelos Especiais</a></p>
+                    </div>
+                </div>
+    
+                <div class="review-card">
+                    <div class="review-header">
+                        <div class="review-icon">
+                            <i class="fas fa-crosshairs"></i>
+                        </div>
+                        <h3>Lanternas de Longo Alcance</h3>
+                    </div>
+                    <div class="sub-items">
+                         <p>As chamadas Throwers, lanternas especializadas em longo alcance, independente do seu tamanho.</p>
+                         <p><a href="#">Ver modelos Thrower</a></p>
+                    </div>
+                </div>
+    
+            </div>
+        </div>
+    </section>
+
+    <script>
+        // Espera todo o conteúdo da página (DOM) ser carregado antes de executar o script
+        document.addEventListener('DOMContentLoaded', function() {
+
+            // Seleciona todos os elementos que servirão como "botão" para abrir o menu
+            const accordionHeaders = document.querySelectorAll('.review-header');
+
+            // ----------------------------------------------------------------------------------
+            // VERSÃO 1: MODO "COLLAPSIBLE" (Vários itens podem ser abertos ao mesmo tempo)
+            // Para usar esta versão, apague ou comente a VERSÃO 2 abaixo.
+            // ----------------------------------------------------------------------------------
+            /*accordionHeaders.forEach(header => {
+                // Adiciona um evento de clique a cada cabeçalho
+                header.addEventListener('click', function() {
+                    // 'this' se refere ao cabeçalho que foi clicado.
+                    // 'this.parentElement' é o .review-card que contém o cabeçalho.
+                    // 'classList.toggle('active')' adiciona a classe 'active' se ela não existir,
+                    // e remove se ela já existir. É isso que faz o "abre e fecha".
+                    this.parentElement.classList.toggle('active');
+                });
+            });
+*/
+
+            // ----------------------------------------------------------------------------------
+            // VERSÃO 2: MODO "ACCORDION" (Apenas um item pode ser aberto por vez)
+            // Para usar esta versão, apague ou comente a VERSÃO 1 acima.
+            // ----------------------------------------------------------------------------------
+            
+            accordionHeaders.forEach(header => {
+                header.addEventListener('click', function() {
+                    // Encontra o card que está atualmente ativo/aberto
+                    const currentActiveCard = document.querySelector('.review-card.active');
+                    // Pega o card pai do cabeçalho que acabamos de clicar
+                    const clickedCard = this.parentElement;
+
+                    // Se existe um card ativo, e ele NÃO é o mesmo que acabamos de clicar...
+                    if (currentActiveCard && currentActiveCard !== clickedCard) {
+                        // ...então remove a classe 'active' dele para fechá-lo.
+                        currentActiveCard.classList.remove('active');
+                    }
+
+                    // Agora, abre ou fecha o card que foi clicado.
+                    // Se ele já estava aberto, será fechado. Se estava fechado, será aberto.
+                    clickedCard.classList.toggle('active');
+                });
+            });
+            
+
+        });
+    </script>
+
+</body>
+</html>
